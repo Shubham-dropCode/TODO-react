@@ -7,20 +7,26 @@ import Modal from "react-bootstrap/Modal";
 import { useState } from "react";
 import ListGroup from "react-bootstrap/ListGroup";
 import Form from "react-bootstrap/Form";
+import InputGroup from "react-bootstrap/InputGroup";
+import { ImBin } from "react-icons/im";
 
 function App() {
-  const [taskTitle, settaskTitle] = useState("");
-  const [task, settask] = useState([]);
+  const [todoList, settodoList] = useState([]);
+  const [todoListTitle, settodoListTitle] = useState("");
   const [show, setShow] = useState(false);
 
   //Add function
   const onAdd = () => {
-    settask((task) => [...task, taskTitle]);
+    const task = {
+      id: todoList.length == 0 ? 1 : todoList[todoList.length - 1].id + 1,
+      taskName: todoListTitle,
+    };
+    settodoList((todoList) => [...todoList, task]);
     setShow(false);
   };
 
-  const onRemove = () => {
-    settask((current) => current.filter((_, index) => index !== 0));
+  const onRemove = (id) => {
+    settodoList(todoList.filter((task) => task.id !== id));
   };
 
   const handleClose = () => setShow(false);
@@ -30,57 +36,57 @@ function App() {
     <>
       <Navbar bg="dark" variant="dark">
         <Container className="justify-content-center">
-          <Navbar.Brand href="#home">Add Tasks</Navbar.Brand>
+          <Navbar.Brand href="#home">TodoLists</Navbar.Brand>
         </Container>
       </Navbar>
 
       <Container className="p-3">
         <Modal.Dialog>
-          <Modal.Header className="">
+          <Modal.Header>
             <Modal.Title>Tasks List</Modal.Title>
             <div>
               <Button variant="primary" className="m-3" onClick={handleShow}>
-                Add Task
-              </Button>
-              <Button variant="danger" onClick={onRemove}>
-                Remove Task
+                Add todoList
               </Button>
             </div>
           </Modal.Header>
 
           <Modal.Body>
             <ListGroup>
-              {task &&
-                task.map((e) => (
-                  <ListGroup.Item className="m-1">{e}</ListGroup.Item>
-                ))}
+              {todoList &&
+                todoList.map((e, Index) => {
+                  return (
+                    <ListGroup.Item className="m-1 d-flex justify-content-between align-item-center">
+                      {e.taskName}
+                      <ImBin type="button" onClick={() => onRemove(e.id)} />
+                    </ListGroup.Item>
+                  );
+                })}
             </ListGroup>
           </Modal.Body>
           <Modal show={show} onHide={handleClose}>
             <Modal.Header closeButton>
-              <Modal.Title>Add Task</Modal.Title>
+              <Modal.Title>Add to List</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              <Form>
-                <Form.Group className="mb-3">
-                  <Form.Label>Task Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter you todo task"
-                    autoFocus
-                    onChange={(e) => {
-                      settaskTitle(e.target.value);
-                    }}
-                  />
-                </Form.Group>
-              </Form>
+              <InputGroup className="mb-3">
+                <InputGroup.Text>Task Name</InputGroup.Text>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter you todo todoList"
+                  autoFocus
+                  onChange={(e) => {
+                    settodoListTitle(e.target.value);
+                  }}
+                />
+              </InputGroup>
             </Modal.Body>
             <Modal.Footer>
               <Button variant="secondary" onClick={handleClose}>
                 Close
               </Button>
               <Button variant="primary" onClick={onAdd}>
-                Add to List
+                Add
               </Button>
             </Modal.Footer>
           </Modal>
