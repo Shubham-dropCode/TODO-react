@@ -4,29 +4,65 @@ import Container from "react-bootstrap/Container";
 import Navbar from "react-bootstrap/Navbar";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ListGroup from "react-bootstrap/ListGroup";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import { ImBin } from "react-icons/im";
+// import { MdEdit } from "react-icons/md";
+import { GoCheck } from "react-icons/go";
+import { db } from "./Firebase-Config";
+import {
+  addDoc,
+  collection,
+  onSnapshot,
+  query,
+  doc,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore";
 
 function App() {
   const [todoList, settodoList] = useState([]);
-  const [todoListTitle, settodoListTitle] = useState("");
+  const [title, settitle] = useState("");
   const [show, setShow] = useState(false);
 
+  useEffect(() => {
+    const q = query(collection(db, "todos"));
+    const unsub = onSnapshot(q, (QuerySnapshot) => {
+      let todosArray = [];
+      QuerySnapshot.forEach((doc) => {
+        todosArray.push({ ...doc.data(), id: doc.id });
+      });
+      settodoList(todosArray);
+    });
+    return () => unsub();
+  }, []);
+
   //Add function
-  const onAdd = () => {
-    const task = {
-      id: todoList.length == 0 ? 1 : todoList[todoList.length - 1].id + 1,
-      taskName: todoListTitle,
-    };
-    settodoList((todoList) => [...todoList, task]);
-    setShow(false);
+  const onAdd = async (todo) => {
+    if (title !== "") {
+      await addDoc(collection(db, "todos"), {
+        title,
+        completed: false,
+      });
+      setShow(false);
+    }
   };
 
-  const onRemove = (id) => {
-    settodoList(todoList.filter((task) => task.id !== id));
+  // const handleEdit = async (todo, title) => {
+  //   await updateDoc(doc(db, "todos", todo.id), { title: title });
+  // };
+
+  const toggleComplete = async (todoList) => {
+    console.log(todoList);
+    await updateDoc(doc(db, "todos", todoList.id), {
+      completed: !todoList.completed,
+    });
+  };
+
+  const handleDelete = async (id) => {
+    await deleteDoc(doc(db, "todos", id));
   };
 
   const handleClose = () => setShow(false);
@@ -36,7 +72,7 @@ function App() {
     <>
       <Navbar bg="dark" variant="dark">
         <Container className="justify-content-center">
-          <Navbar.Brand href="#home">TodoLists</Navbar.Brand>
+          <Navbar.Brand href="">TodoLists</Navbar.Brand>
         </Container>
       </Navbar>
 
@@ -52,17 +88,38 @@ function App() {
           </Modal.Header>
 
           <Modal.Body>
-            <ListGroup>
-              {todoList &&
-                todoList.map((e, Index) => {
-                  return (
-                    <ListGroup.Item className="m-1 d-flex justify-content-between align-item-center">
-                      {e.taskName}
-                      <ImBin type="button" onClick={() => onRemove(e.id)} />
+            {todoList &&
+              todoList.map((todo) => {
+                return (
+                  <ListGroup key={todo.id}>
+                    <ListGroup.Item
+                      className="d-flex justify-content-between"
+                      style={{
+                        textDecoration: todo.completed && "line-through",
+                      }}
+                    >
+                      {todo.title}
+                      <div>
+                        <ImBin
+                          type="button"
+                          className="mx-2"
+                          onClick={() => handleDelete(todo.id)}
+                        />
+                        <GoCheck
+                          type="button"
+                          className="mx-2"
+                          onClick={() => toggleComplete(todo)}
+                        />
+                        {/* <MdEdit
+                          type="button"
+                          className="mx-2"
+                          onClick={() => handleEdit(todo, todo.title)}
+                        /> */}
+                      </div>
                     </ListGroup.Item>
-                  );
-                })}
-            </ListGroup>
+                  </ListGroup>
+                );
+              })}
           </Modal.Body>
           <Modal show={show} onHide={handleClose}>
             <Modal.Header closeButton>
@@ -75,8 +132,8 @@ function App() {
                   type="text"
                   placeholder="Enter you todo todoList"
                   autoFocus
-                  onChange={(e) => {
-                    settodoListTitle(e.target.value);
+                  onChange={(todo) => {
+                    settitle(todo.target.value);
                   }}
                 />
               </InputGroup>
