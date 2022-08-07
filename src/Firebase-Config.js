@@ -6,12 +6,12 @@ import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDpkW6ERU3npWo3LjhYbmWbsUdM9kpmR_s",
-  authDomain: "todo-crud-b060a.firebaseapp.com",
-  projectId: "todo-crud-b060a",
-  storageBucket: "todo-crud-b060a.appspot.com",
-  messagingSenderId: "546932856818",
-  appId: "1:546932856818:web:6d7db41dc62677efabbd6b",
+  apiKey: `${process.env.REACT_APP_API_KEY}`,
+  authDomain: `${process.env.REACT_APP_AUTH_DOMAIN}`,
+  projectId: `${process.env.REACT_APP_PROJECT_ID}`,
+  storageBucket: `${process.env.REACT_APP_STORAGE_BUCKET}`,
+  messagingSenderId: `${process.env.REACT_APP_MESSAGING_SENDER_ID}`,
+  appId: `${process.env.REACT_APP_APP_ID}`,
 };
 
 // Initialize Firebase
